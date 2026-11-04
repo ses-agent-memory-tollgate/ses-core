@@ -41,15 +41,23 @@ try:
     from solders.signature import Signature
     from solana.rpc.async_api import AsyncClient
     from solana.rpc.commitment import Confirmed
-    from solana.rpc.types import TokenAccountOpts
+    try:
+        from solana.rpc.types import TokenAccountOpts
+    except ImportError:
+        # solana>=0.41 moved RPC option models out of solana.rpc.types.
+        from solana.rpc.models import TokenAccountOpts
 
     TOKEN_PROGRAM_ID = Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
     ASSOCIATED_TOKEN_PROGRAM_ID = Pubkey.from_string("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
     SOLANA_AVAILABLE = True
-except ImportError:
+except ImportError as exc:
     Keypair = None  # type: ignore
     Pubkey = None  # type: ignore
-    logger.warning("solana/solders not installed — Solana Pay disabled")
+    Signature = None  # type: ignore
+    AsyncClient = None  # type: ignore
+    Confirmed = None  # type: ignore
+    TokenAccountOpts = None  # type: ignore
+    logger.warning("solana/solders not installed — Solana Pay disabled: %s", exc)
     TOKEN_PROGRAM_ID = None  # type: ignore
     ASSOCIATED_TOKEN_PROGRAM_ID = None  # type: ignore
 

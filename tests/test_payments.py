@@ -251,6 +251,7 @@ def test_solana_network_devnet_default_rpc_when_no_url():
     _clear_env()
 
 
+@pytest.mark.skipif(not SOLANA_AVAILABLE, reason="Solana dependencies not installed")
 def test_verify_usdc_transfer_sums_post_balances_only_for_matching_mint(monkeypatch):
     """verify sums deltas only for post_token_balances whose mint == self.usdc_mint"""
     _clear_env()
@@ -307,6 +308,7 @@ def test_verify_usdc_transfer_sums_post_balances_only_for_matching_mint(monkeypa
     _clear_env()
 
 
+@pytest.mark.skipif(not SOLANA_AVAILABLE, reason="Solana dependencies not installed")
 def test_verify_fails_with_clear_error_when_mint_mismatch_in_tx():
     """When token balances use a different mint, verify should fail and error should mention expected mint/network/rpc"""
     _clear_env()
