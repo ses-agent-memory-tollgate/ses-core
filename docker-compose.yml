@@ -1,0 +1,60 @@
+# ──────────────────────────────────────────────────────────
+# SES Agentic Gateway — Docker Compose
+#
+# Default: embedded mode (SQLite, no external dependencies).
+# Profile "full": adds local Qdrant + Redis for integration testing.
+#
+# Usage:
+#   docker compose up -d                          # embedded mode
+#   EMBEDDED_MODE=false docker compose --profile full up -d
+# ──────────────────────────────────────────────────────────
+
+services:
+  gateway:
+    build: .
+    container_name: ses-gateway
+    ports:
+      - "8001:8000"
+    environment:
+      - EMBEDDED_MODE=${EMBEDDED_MODE:-true}
+      - SES_DATA_DIR=/data/ses
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SES_HOST=0.0.0.0
+      - SES_PORT=8000
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}
+      - SOLANA_MERCHANT_SECRET=${SOLANA_MERCHANT_SECRET:-}
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_HOST=redis
+    volumes:
+      - ses_data:/data/ses
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ses-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    profiles:
+      - full  # only started with --profile full
+
+  redis:
+    image: redis:7-alpine
+    container_name: ses-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    profiles:
+      - full  # only started with --profile full
+
+volumes:
+  ses_data:
+  qdrant_data:
+  redis_data:

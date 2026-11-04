@@ -1,0 +1,107 @@
+name: Gate 5.5 Validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python-validation:
+    name: Python validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Upgrade packaging toolchain
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install package with validation dependencies
+        run: |
+          python -m pip install -e ".[dev,server]"
+          python -m pip install bandit safety
+
+      - name: Run pytest
+        run: pytest
+
+      - name: Run Bandit
+        run: bandit -r ses/ -ll --format txt
+
+      - name: Run Safety
+        run: safety check
+
+  docker-embedded:
+    name: Docker embedded gateway validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start embedded gateway
+        run: docker compose up -d --build gateway
+
+      - name: Wait for gateway readiness
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:8001/v1/health; then
+              exit 0
+            fi
+            echo "Gateway not ready yet (attempt ${attempt}/60); waiting..."
+            sleep 2
+          done
+          echo "Gateway did not become ready in time."
+          docker compose logs gateway
+          exit 1
+
+      - name: Check gateway health
+        run: curl http://127.0.0.1:8001/v1/health
+
+      - name: Print gateway logs on failure
+        if: failure()
+        run: docker compose logs gateway
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose down -v
+
+  docker-full-qdrant:
+    name: Docker full Qdrant validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start full stack
+        run: EMBEDDED_MODE=false SES_ALLOW_HASH_EMBEDDINGS=false docker compose --profile full up -d --build
+
+      - name: Wait for gateway readiness
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:8001/v1/health; then
+              exit 0
+            fi
+            echo "Gateway not ready yet (attempt ${attempt}/60); waiting..."
+            sleep 2
+          done
+          echo "Gateway did not become ready in time."
+          docker compose logs gateway qdrant redis
+          exit 1
+
+      - name: Check gateway health
+        run: curl http://127.0.0.1:8001/v1/health
+
+      - name: Print full stack logs on failure
+        if: failure()
+        run: docker compose logs gateway qdrant redis
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose --profile full down -v
