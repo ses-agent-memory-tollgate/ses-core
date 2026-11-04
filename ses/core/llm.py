@@ -1,12 +1,46 @@
-import os
 import json
 import logging
-import urllib.request
+import http.client
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 from ses.config import OLLAMA_BASE_URL, OLLAMA_MODEL
 
 logger = logging.getLogger(__name__)
+
+
+def _post_json(url: str, payload: bytes, timeout: float = 60) -> Dict[str, Any]:
+    """POST JSON to an http(s) endpoint. file:, data: and other schemes are rejected."""
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("OLLAMA_BASE_URL must be an http or https URL with a host")
+
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    path = parsed.path or "/"
+    if parsed.query:
+        path = f"{path}?{parsed.query}"
+
+    connection_cls = http.client.HTTPSConnection if parsed.scheme == "https" else http.client.HTTPConnection
+    connection = connection_cls(parsed.hostname, port, timeout=timeout)
+    try:
+        connection.request(
+            "POST",
+            path,
+            body=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        response = connection.getresponse()
+        raw = response.read()
+        if response.status >= 400:
+            raise RuntimeError(f"Ollama respondió HTTP {response.status}")
+        result = json.loads(raw.decode("utf-8"))
+    finally:
+        connection.close()
+
+    if not isinstance(result, dict):
+        raise RuntimeError("Ollama no devolvió un objeto JSON")
+    return result
+
 
 class LocalLLMProvider:
     """
@@ -41,19 +75,11 @@ class LocalLLMProvider:
             "options": {"temperature": 0.2},
         }).encode('utf-8')
 
-        req = urllib.request.Request(
-            self.ollama_url,
-            data=payload,
-            headers={'Content-Type': 'application/json'},
-            method='POST'
-        )
-
-        with urllib.request.urlopen(req, timeout=60) as response:
-            result = json.loads(response.read().decode('utf-8'))
-            content = result.get("response")
-            if not content:
-                raise RuntimeError("Ollama no devolvió contenido utilizable")
-            return content
+        result = _post_json(self.ollama_url, payload, timeout=60)
+        content = result.get("response")
+        if not content:
+            raise RuntimeError("Ollama no devolvió contenido utilizable")
+        return content
 
     def _build_system_prompt(self) -> str:
         return (

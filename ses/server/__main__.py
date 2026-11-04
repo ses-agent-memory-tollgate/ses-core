@@ -26,7 +26,8 @@ def main():
 
     import uvicorn
 
-    host = os.getenv("SES_HOST", "0.0.0.0")
+    # Local default is loopback. Containers set SES_HOST=0.0.0.0 explicitly.
+    host = os.getenv("SES_HOST", "127.0.0.1")
     port = int(os.getenv("SES_PORT", "8000"))
 
     uvicorn.run(

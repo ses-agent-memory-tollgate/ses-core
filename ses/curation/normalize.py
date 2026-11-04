@@ -35,7 +35,8 @@ def normalize_markdown(content: str, citation_base: str) -> List[NormalizedSecti
     current_lines = []
     
     def flush_section():
-        nonlocal current_heading, current_section_id, current_lines
+        # Only current_lines is assigned here. The heading fields are read from the closure.
+        nonlocal current_lines
         text = "\n".join(current_lines).strip()
         
         # If this is the preamble

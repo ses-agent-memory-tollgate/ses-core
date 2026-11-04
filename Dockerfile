@@ -9,6 +9,8 @@ RUN pip install --no-cache-dir ".[server]"
 
 ENV EMBEDDED_MODE=true
 ENV SES_DATA_DIR=/data/ses
+ENV SES_HOST=0.0.0.0
+ENV SES_PORT=8000
 ENV SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
 
 VOLUME ["/data"]

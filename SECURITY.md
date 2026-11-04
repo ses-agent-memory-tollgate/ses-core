@@ -52,7 +52,7 @@ SES requires payment verification via HTTP 402 flows.
 - If Ollama is unavailable, the local LLM provider may return fallback answers over retrieved citations. That is acceptable for development checks but not proof of production answer quality.
 
 ### Static Analysis
-- CI runs blocking `bandit` (Python security) + `safety` (dependency vulnerability) checks on every push/PR to release branches.
+- CI runs blocking `bandit` (Python security) and `pip-audit` (dependency vulnerability) checks on every push/PR to release branches. `safety check` is not used: current Safety CLI requires a paid API key and is not a reproducible gate.
 
 ## Reporting
 Report issues privately to the maintainers. See repository SECURITY policy.

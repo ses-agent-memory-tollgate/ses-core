@@ -1,4 +1,4 @@
-name: SES Semantic Engine CI/CD
+name: SES Core CI
 
 on:
   push:
@@ -29,30 +29,10 @@ jobs:
         python-version: "3.12"
         cache: "pip"
 
-    - name: Install Rust Toolchain
-      uses: dtolnay/rust-toolchain@stable
-
-    - name: Cache Cargo Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          core_rs/target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('core_rs/Cargo.lock') }}
-
-    - name: Install System Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev
-
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install -e .[dev,server]
+        python -m pip install -e ".[dev,server]"
 
 
 
@@ -62,17 +42,6 @@ jobs:
         flake8 ses/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings
         flake8 ses/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    - name: Compile Rust Core (PyO3)
-      run: |
-        if [ -d core_rs ]; then
-          cd core_rs
-          cargo build --release
-          # Copy compiled shared library so Python tests can load it
-          cp target/release/libjas_vector_core.so ../jas_vector_core.so || cp target/release/libjas_vector_core.dylib ../jas_vector_core.so || cp target/release/jas_vector_core.dll ../jas_vector_core.so
-        else
-          echo "core_rs not present; using Python/numpy fallback."
-        fi
 
     - name: Run Test Suite (Pytest)
       env:
@@ -100,16 +69,17 @@ jobs:
     - name: Install security tools
       run: |
         python -m pip install --upgrade pip
-        pip install bandit safety
+        python -m pip install bandit pip-audit
+        python -m pip install -e ".[server]"
 
     - name: Run Bandit (Python security linter)
       run: |
         bandit -r ses/ -ll --format txt
         bandit -r ses/ -ll --format json -o bandit-report.json
 
-    - name: Run Safety (dependency vulnerability check)
+    - name: Run pip-audit (dependency vulnerability check)
       run: |
-        safety check --json > safety-report.json
+        pip-audit --progress-spinner off --format json --output pip-audit-report.json
 
     - name: Upload security reports
       uses: actions/upload-artifact@v4
@@ -118,5 +88,5 @@ jobs:
         name: security-reports
         path: |
           bandit-report.json
-          safety-report.json
+          pip-audit-report.json
         retention-days: 14

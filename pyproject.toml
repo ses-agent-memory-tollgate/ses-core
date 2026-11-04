@@ -51,9 +51,9 @@ server = [
 ses = "ses.server.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/JPatronC92/ses-core"
-Documentation = "https://github.com/JPatronC92/ses-core/wiki"
-Repository = "https://github.com/JPatronC92/ses-core.git"
+Homepage = "https://github.com/ses-agent-memory-tollgate/ses-core"
+Documentation = "https://github.com/ses-agent-memory-tollgate/ses-core#readme"
+Repository = "https://github.com/ses-agent-memory-tollgate/ses-core.git"
 
 [tool.setuptools.packages.find]
 include = ["ses*"]

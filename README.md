@@ -5,7 +5,7 @@
   [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org)
   [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
   
-  *Leer en [Español](README.md) · [English](README_en.md) · [Agent docs (AGENTS.md)](AGENTS.md)*
+  *[Agent docs (AGENTS.md)](AGENTS.md)*
 </div>
 
 ---

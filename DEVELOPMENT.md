@@ -6,7 +6,7 @@
 3. Activate virtual environment.
 4. Install dependencies:
    ```bash
-   pip install -e .[server,test]
+   pip install -e ".[dev,server]"
    ```
 5. Copy `.env.example` to `.env`.
 
