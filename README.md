@@ -124,7 +124,8 @@ pip install "memory-tollgate[server]"
 
 ## ⚙️ Configuración del Servidor Tollgate
 
-El servidor se configura mediante variables de entorno en un archivo `.env`:
+El servidor lee variables de entorno del proceso. `ses serve` no carga `.env`
+automáticamente. Copia `.env.example` a `.env` y ajusta los valores; por ejemplo:
 
 ```env
 # URL base pública expuesta en el Agent Card
@@ -137,12 +138,25 @@ DEBUG=true
 EMBEDDED_MODE=true
 ```
 
-Para iniciar el servidor Tollgate:
+Para cargar un `.env` de confianza e iniciar el servidor Tollgate desde la raíz
+del repositorio (Bash; usa comillas en valores con espacios):
 ```bash
+set -a
+. ./.env
+set +a
 ses serve
 ```
 
+Carga las variables antes de iniciar SES: `ses/config.py` resuelve la
+configuración al importar. Reinicia el proceso después de cambiar los valores.
+El servidor local escucha en `127.0.0.1:8000` por defecto; `SES_HOST` y `SES_PORT`
+permiten cambiarlo (ver `ses/server/__main__.py`).
+
 ### Docker quickstart verificado
+
+Docker Compose usa `.env` para interpolar las variables declaradas en
+`docker-compose.yml`; no pasa automáticamente todo el archivo al contenedor.
+El puerto publicado es `8001`, a diferencia del `8000` de `ses serve`.
 
 Modo embedded local, sin Qdrant:
 
