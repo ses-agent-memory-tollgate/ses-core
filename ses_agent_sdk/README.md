@@ -1,6 +1,6 @@
 # ses-agent-sdk
 
-Lightweight HTTP client for [SES Agentic Memory Tollgate](https://github.com/JPatronC92/ses-core).
+Lightweight HTTP client for [SES Agentic Memory Tollgate](https://github.com/ses-agent-memory-tollgate/ses-core). The server package is `memory-tollgate`, not `ses-core`.
 
 Pay-per-use RAG for autonomous agents. No torch. No sentence-transformers. Just HTTP with automatic `x402` payment negotiation.
 

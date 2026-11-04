@@ -117,7 +117,7 @@ pip install ses-agent-sdk
 
 ### Instalar el Servidor Tollgate (Hospedador de Memoria)
 ```bash
-pip install ses-core[server]
+pip install "memory-tollgate[server]"
 ```
 
 ---

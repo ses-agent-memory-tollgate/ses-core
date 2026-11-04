@@ -2,7 +2,7 @@
 SES Agentic API Gateway — FastAPI application factory.
 
 Usage:
-    pip install ses-core[server]
+    pip install "memory-tollgate[server]"
     ses serve
 """
 

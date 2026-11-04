@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ses-core"
+name = "memory-tollgate"
 version = "2.0.0"
-description = "Core engine for SES Agent Memory Tollgate: local RAG plus hosted agent-payable semantic memory."
+description = "Paid semantic memory for autonomous agents: local RAG plus a hosted x402 tollgate."
 authors = [{name = "Julio Patron", email = "juliopc92@gmail.com"}]
 license = {text = "GPL-3.0"}
 readme = "README.md"
